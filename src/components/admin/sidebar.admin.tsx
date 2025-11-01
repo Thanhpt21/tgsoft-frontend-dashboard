@@ -59,59 +59,7 @@ export default function SidebarAdmin({ collapsed }: SidebarAdminProps) {
             icon: <SolutionOutlined />,
             label: <Link href="/admin/promptAI">Kịch bản AI</Link>,
           },
-          // {
-          //   key: '11',
-          //   icon: <ProductOutlined />,
-          //   label: <Link href="/admin/product">Sản phẩm</Link>,
-          // },
-       
-          // {
-          //   key: '13',
-          //   icon: <FileProtectOutlined />,
-          //   label: <Link href="/admin/order">Đơn hàng</Link>,
-          // },
-          // {
-          //   key: '15',
-          //   icon: <MessageOutlined />,
-          //   label: <Link href="/admin/contact">Liên hệ</Link>,
-          // },
-          // {
-          //   key: 'sub1',
-          //   icon: <UnorderedListOutlined />,
-          //   label: 'Danh mục',
-          //   children: [
-          //     { key: '3', icon: <PicLeftOutlined />, label: <Link href="/admin/category">Sản phẩm</Link> },
-          //     { key: '4', icon: <PicRightOutlined />, label: <Link href="/admin/blog-category">Tin tức</Link> },
-          //   ],
-          // },
-          // {
-          //   key: 'sub2',
-          //   icon: <AppstoreOutlined />,
-          //   label: 'Thuộc tính',
-          //   children: [
-          //     { key: '5', icon: <AppleOutlined />, label: <Link href="/admin/brand">Thương hiệu</Link> },
-          //     { key: '6', icon: <BgColorsOutlined />, label: <Link href="/admin/color">Màu sắc</Link> },
-          //     { key: '7', icon: <ScissorOutlined />, label: <Link href="/admin/size">Kích thước</Link> },
-          //   ],
-          // },
-          // {
-          //   key: 'sub3',
-          //   icon: <AppstoreOutlined />,
-          //   label: 'Marketing',
-          //   children: [
-          //     { key: '8', icon: <GiftOutlined />, label: <Link href="/admin/coupon">Mã giảm giá</Link> },
-          //   ],
-          // },
-          // {
-          //   key: 'sub4',
-          //   icon: <BranchesOutlined />,
-          //   label: 'Cấu hình',
-          //   children: [
-          //     { key: '9', icon: <HomeOutlined />, label: <Link href="/admin/store">Chi nhánh</Link> },
-          //     { key: '10', icon: <SettingOutlined />, label: <Link href="/admin/config">Cài đặt</Link> },
-          //     { key: '14', icon: <TruckOutlined />, label: <Link href="/admin/shipping">Phí vận chuyển</Link> },
-          //   ],
-          // },
+        
         ]}
       />
     </Layout.Sider>
