@@ -25,14 +25,14 @@ export default function HeaderAdmin({ collapsed, onCollapse }: HeaderAdminProps)
   const { logoutUser } = useLogout();
 
   const items: MenuProps['items'] = [
-    {
-      key: 'settings',
-      label: 'Cài đặt',
-      icon: <SettingOutlined />,
-      onClick: () => {
-        console.log('Go to settings');
-      },
-    },
+    // {
+    //   key: 'settings',
+    //   label: 'Cài đặt',
+    //   icon: <SettingOutlined />,
+    //   onClick: () => {
+    //     console.log('Go to settings');
+    //   },
+    // },
     {
       key: 'logout',
       label: 'Đăng xuất',

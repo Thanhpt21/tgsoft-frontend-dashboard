@@ -42,7 +42,7 @@ export default function UserTable() {
       key: 'email',
     },
  
-    { title: 'Loại tài khoản', dataIndex: 'type_account', key: 'type_account', render: (type: string) => ( <Tag color={type === 'local' ? 'gold' : 'purple'}>{type}</Tag> ), },
+  
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',

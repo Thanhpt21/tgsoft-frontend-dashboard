@@ -17,9 +17,7 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
   const [form] = Form.useForm()
 
   // ✅ Sử dụng hook, truyền tenantId từ tenant
-  const { data: allProducts, isLoading: loadingProducts } = useAllProducts({
-    tenantId: tenant?.id || 0, // Lấy tenantId từ props tenant
-  })
+  const { data: allProducts, isLoading: loadingProducts } = useAllProducts({ search: '' })
   const { data: users, isLoading: loadingUsers, refetch } = useUsersOfTenant(tenant?.id || 0)
     const userList = Array.isArray(users) ? users : users?.data || []
   const currentAccountCount = userList.length
@@ -40,6 +38,7 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
   }, [visible, tenant, form])
 
   // Lấy số lượng SKU từ tất cả sản phẩm
+  console.log('All Products:', allProducts);
   const numberOfSKUs = allProducts?.length || 0
 
 

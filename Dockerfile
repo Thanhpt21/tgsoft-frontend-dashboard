@@ -1,53 +1,47 @@
-# -----------------------------------------------------------
-# Build Stage - Creates the Next.js product build
-# -----------------------------------------------------------
-FROM node:22-alpine AS builder
 
-# Set the working directory inside the container
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy dependency configuration files (package.json and lock file)
+
+COPY .env.prod ./.env.production
+
+
 COPY package.json package-lock.json ./
 
-# Install all dependencies (including dev dependencies)
-RUN npm install
 
-# Copy all Next.js project source code
-COPY . .
+RUN npm ci --legacy-peer-deps
 
-# Compile the Next.js application
-# This command will create the .next/ directory and static files, as well as server-side code.
-# The 'build' script in your package.json runs 'next build'.
+
+COPY tsconfig.json ./ 
+COPY tailwind.config.js ./ 
+COPY postcss.config.js ./ 
+COPY next.config.js ./ 
+
+
+COPY src ./src 
+COPY public ./public
+
+
 RUN npm run build
 
-# -----------------------------------------------------------
-# Production Stage - Creates a lightweight image to run the Next.js application
-# -----------------------------------------------------------
-FROM node:22-alpine AS runner
 
-# Set the working directory inside the container
+FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Next.js requires these directories to run in production.
-# Copy only the package.json and lock file needed for runtime (only production deps).
-COPY package.json package-lock.json ./
+ENV NODE_ENV=production
+ENV PORT=3001 
 
-# Install only production dependencies (do not install dev dependencies)
-RUN npm install --omit=dev
 
-# Copy the .next/ directory from the 'builder' stage.
-# This is where the optimized Next.js code is located.
-COPY --from=builder /app/.next ./.next
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy the public/ directory containing static assets (e.g., images, favicon).
+
 COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./ 
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Set the PORT environment variable that Next.js will listen on
-ENV PORT 3000
+USER nextjs
 
-# Expose the port your Next.js application will listen on
-EXPOSE 3000
+EXPOSE 3001  
 
-# Command to run your Next.js application when the container starts
-# 'npm start' will start the Next.js application in production mode.
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

@@ -2,15 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 
 interface UseAllProductsProps {
-  tenantId: number
   search?: string
 }
 
-export const useAllProducts = ({ tenantId, search }: UseAllProductsProps) => {
+export const useAllProducts = ({ search }: UseAllProductsProps) => {
   return useQuery({
-    queryKey: ['allProducts', tenantId, search], 
+    queryKey: ['allProducts', search], 
     queryFn: async () => {
-      const res = await api.get(`/products/all/list/${tenantId}`, {
+      const res = await api.get(`/products/all/list`, {
         params: { search },
       })
       return res.data.data
