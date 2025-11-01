@@ -35,9 +35,6 @@ export default function PromptAITable() {
 
   const { data, isLoading, refetch } = usePromptAIs({ page, limit: 10, search })
   const { mutateAsync: deletePromptAI, isPending: isDeleting } = useDeletePromptAI()
-
-  console.log('PromptAITable data:', data)
-
   const columns: ColumnsType<PromptAI> = [
     {
       title: 'STT',

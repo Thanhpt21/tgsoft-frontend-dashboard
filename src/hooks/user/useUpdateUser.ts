@@ -15,8 +15,7 @@ export const useUpdateUser = () => {
     }) => {
       if (file) {
         const formData = new FormData()
-        
-        // 👇 Append với đúng kiểu dữ liệu
+      
         Object.keys(data).forEach(key => {
           if (data[key] !== undefined && data[key] !== null) {
             // Convert boolean và number sang string cho FormData

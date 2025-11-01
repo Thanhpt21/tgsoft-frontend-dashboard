@@ -37,8 +37,6 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
     }
   }, [visible, tenant, form])
 
-  // Lấy số lượng SKU từ tất cả sản phẩm
-  console.log('All Products:', allProducts);
   const numberOfSKUs = allProducts?.length || 0
 
 
@@ -185,7 +183,7 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
         >
           <Input type="number" placeholder="Giới hạn người dùng truy cập đồng thời" min={1} />
         </Form.Item>
-         <Form.Item
+          <Form.Item
           name="expirationDate"
           label="Ngày hết hạn"
           rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn' }]}
@@ -193,7 +191,8 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
           <DatePicker 
             style={{ width: '100%' }} 
             format="YYYY-MM-DD" 
-            placeholder="Chọn ngày hết hạn" 
+            placeholder="Chọn ngày hết hạn"
+          
           />
         </Form.Item>
       </Form>

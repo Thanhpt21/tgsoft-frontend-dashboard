@@ -45,10 +45,8 @@ export function RolePermissionsModal({
     try {
       if (checked) {
         await addPermission({ roleId, permissionId })
-        message.success('Thêm quyền thành công')
       } else {
         await removePermission({ roleId, permissionId })
-        message.success('Xóa quyền thành công')
       }
       refetch()
     } catch (error: any) {

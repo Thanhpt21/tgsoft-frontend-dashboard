@@ -37,10 +37,7 @@ export const UserCreateModal = ({
       // Lấy file gốc để upload lên server
       const file = fileList?.[0]?.originFileObj
       const tokenAI = Number(values.tokenAI)
-      if (isNaN(tokenAI)) {
-        message.error('Số lượng Token AI phải là một số hợp lệ')
-        return
-      }
+    
 
       // Gửi data + file lên server
       await mutateAsync({ ...values, file, tokenAI })
@@ -183,13 +180,34 @@ export const UserCreateModal = ({
             </Form.Item>
           </Col>
         </Row>
-          <Row gutter={16}>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               label="Số lượng Token AI"
               name="tokenAI"
-              >
-              <Input type="number" placeholder="Nhập số lượng Token AI" />
+              rules={[
+                { required: true, message: 'Vui lòng nhập số lượng Token AI' },
+                { 
+                  type: 'number', 
+                  transform: (value) => Number(value),
+                  message: 'Token AI phải là số' 
+                },
+                {
+                  validator: (_, value) => {
+                    const num = Number(value)
+                    if (isNaN(num) || num < 0) {
+                      return Promise.reject('Token AI phải là số không âm')
+                    }
+                    return Promise.resolve()
+                  }
+                }
+              ]}
+            >
+              <Input 
+                type="number" 
+                placeholder="Nhập số lượng Token AI" 
+                min={0}
+              />
             </Form.Item>
           </Col>
         </Row>

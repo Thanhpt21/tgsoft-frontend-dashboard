@@ -157,18 +157,27 @@ export const UserUpdateModal = ({
             </Form.Item>
           </Col>
         </Row>
-
-          <Row gutter={16}>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               label="Số lượng Token AI"
               name="tokenAI"
-        
+              rules={[
+                { required: true, message: 'Vui lòng nhập số lượng Token AI' },
+                { 
+                  pattern: /^[0-9]+$/, 
+                  message: 'Token AI phải là số nguyên dương' 
+                }
+              ]}
             >
-              <Input type="number" placeholder="Nhập số lượng Token AI" />
+              <Input 
+                type="number" 
+                placeholder="Nhập số lượng Token AI" 
+                min={0}
+              />
             </Form.Item>
           </Col>
-        </Row>       
+        </Row>      
 
         <Form.Item>
           <Button

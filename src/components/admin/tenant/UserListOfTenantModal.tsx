@@ -8,6 +8,7 @@ import { useAllRoles } from '@/hooks/role/useAllRoles'
 import { UserRoleInfo } from '@/types/user-tenant-role.type'
 import { useState } from 'react'
 import { useTenantOne } from '@/hooks/tenant/useTenantOne'
+import { useUpdateUser } from '@/hooks/user/useUpdateUser'
 
 interface UserListModalProps {
   tenantId: number | null
@@ -19,12 +20,13 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
   const { data: users, isLoading, refetch } = useUsersOfTenant(tenantId !== null ? tenantId : 0)
   const { data: allUsers, isLoading: isLoadingUsers } = useAllUsers()
   const { data: allRoles, isLoading: isLoadingRoles } = useAllRoles()
-  const { data: tenant } = useTenantOne(tenantId || 0) // ✅ Lấy thông tin tenant
+  const { data: tenant, isLoading: isLoadingTenant } = useTenantOne(tenantId || 0) // ✅ Thêm isLoading
   const removeRoleMutation = useRemoveRoleFromTenant()
   const addRoleMutation = useAddRoleToTenant()
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null)
   const [isAddModalVisible, setIsAddModalVisible] = useState(false)
   const [form] = Form.useForm()
+  const updateUserMutation = useUpdateUser() 
 
   if (tenantId === null) {
     return <div>Không có tenantId hợp lệ.</div>
@@ -43,6 +45,12 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
           tenantId,
           roleId,
         })
+        await updateUserMutation.mutateAsync({
+          id: userId,
+          data: {
+            tenantId: null, // Hoặc 0 tùy backend
+          },
+        })
         message.success('Xóa vai trò nhân viên thành công')
         await refetch()
       } catch (error: any) {
@@ -59,6 +67,12 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
           tenantId,
           roleId: values.roleId,
         })
+         await updateUserMutation.mutateAsync({
+          id: values.userId,
+          data: {
+            tenantId: tenantId, // ✅ Gán tenantId
+          },
+        })
         message.success('Thêm vai trò cho nhân viên thành công')
         await refetch()
         setIsAddModalVisible(false)
@@ -69,7 +83,7 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
     }
   }
 
-  const usersInTenant = allUsers || [];
+  const usersInTenant = allUsers || []
 
   return (
     <>
@@ -80,33 +94,36 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
         footer={null}
         width={800}
       >
-        {isLoading ? (
+        {/* ✅ Hiển thị loading khi đang fetch users hoặc tenant */}
+        {isLoading || isLoadingTenant ? (
           <div className="flex justify-center items-center py-8">
-            <Spin size="large" />
+            <Spin size="large" tip="Đang tải dữ liệu..." />
           </div>
         ) : (
           <div>
-            {/* ✅ Hiển thị thông tin giới hạn */}
-            <Alert
-              message={
-                <div className="flex items-center justify-between">
-                  <span>
-                    Số lượng nhân viên: <strong>{currentAccountCount}/{maxAccounts}</strong>
-                  </span>
-                  {!canAddMoreAccounts && (
-                    <span className="text-red-500 text-sm">
-                      ⚠️ Đã đạt giới hạn tài khoản
+            {/* ✅ Chỉ hiển thị Alert khi đã có data tenant */}
+            {tenant && (
+              <Alert
+                message={
+                  <div className="flex items-center justify-between">
+                    <span>
+                      Số lượng nhân viên: <strong>{currentAccountCount}/{maxAccounts}</strong>
                     </span>
-                  )}
-                </div>
-              }
-              type={canAddMoreAccounts ? 'info' : 'warning'}
-              className="mb-4"
-            />
+                    {!canAddMoreAccounts && (
+                      <span className="text-red-500 text-sm">
+                        ⚠️ Đã đạt giới hạn tài khoản
+                      </span>
+                    )}
+                  </div>
+                }
+                type={canAddMoreAccounts ? 'info' : 'warning'}
+                className="mb-4"
+              />
+            )}
 
-            {/* ✅ Nút thêm nhân viên - chỉ hiện khi còn slot */}
-            {canAddMoreAccounts && (
-              <div className="mb-4">
+            {/* ✅ Nút thêm nhân viên - chỉ hiện khi đã load tenant và còn slot */}
+            {tenant && canAddMoreAccounts && (
+              <div className="my-4">
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
@@ -117,8 +134,8 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
               </div>
             )}
 
-            {/* ✅ Thông báo khi đã đầy */}
-            {!canAddMoreAccounts && (
+            {/* ✅ Thông báo khi đã đầy - chỉ hiện khi đã load tenant */}
+            {tenant && !canAddMoreAccounts && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
                 <p className="text-yellow-800">
                   🔒 Cửa hàng đã đạt giới hạn tối đa {maxAccounts} tài khoản. 
@@ -174,7 +191,7 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
                       >
                         <button
                           className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 text-red-500 hover:text-red-600 transition-colors"
-                          disabled={removeRoleMutation.isPending}
+                          disabled={removeRoleMutation.isPending ||  updateUserMutation.isPending}
                         >
                           <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
                         </button>
@@ -253,7 +270,7 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
               >
                 Hủy
               </Button>
-              <Button type="primary" htmlType="submit" loading={addRoleMutation.isPending}>
+              <Button type="primary" htmlType="submit" loading={addRoleMutation.isPending || updateUserMutation.isPending}>
                 Thêm
               </Button>
             </div>

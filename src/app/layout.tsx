@@ -1,28 +1,40 @@
 // src/app/layout.tsx
-'use client';
+'use client'
 
-import { ReactNode } from 'react';
-import '@/styles/globals.css';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AppContent from '@/components/layout/AppContent'; // Import component mới
+import { ReactNode } from 'react'
+import '@/styles/globals.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import AppContent from '@/components/layout/AppContent'
+import dayjs from '@/utils/dayjs'
 
-// Khởi tạo QueryClient một lần duy nhất bên ngoài component để tránh khởi tạo lại không cần thiết
-const queryClient = new QueryClient();
+// ✅ Set dayjs locale
+import 'dayjs/locale/vi'
+dayjs.locale('vi')
+
+// ✅ Khởi tạo QueryClient một lần duy nhất
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // Cache 1 phút
+      refetchOnWindowFocus: false, // Không refetch khi focus window
+    },
+  },
+})
 
 export default function RootLayout({
   children,
 }: {
-  children: ReactNode;
+  children: ReactNode
 }) {
   return (
     <html lang="vi">
       <body>
         <QueryClientProvider client={queryClient}>
-          <AppContent>
-            {children}
-          </AppContent>
+            <AppContent>
+              {children}
+            </AppContent>
         </QueryClientProvider>
       </body>
     </html>
-  );
+  )
 }
