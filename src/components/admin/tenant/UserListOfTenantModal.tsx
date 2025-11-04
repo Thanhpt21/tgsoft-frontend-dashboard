@@ -9,6 +9,7 @@ import { UserRoleInfo } from '@/types/user-tenant-role.type'
 import { useState } from 'react'
 import { useTenantOne } from '@/hooks/tenant/useTenantOne'
 import { useUpdateUser } from '@/hooks/user/useUpdateUser'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface UserListModalProps {
   tenantId: number | null
@@ -17,10 +18,11 @@ interface UserListModalProps {
 }
 
 const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible, onClose }) => {
+  const queryClient = useQueryClient()
   const { data: users, isLoading, refetch } = useUsersOfTenant(tenantId !== null ? tenantId : 0)
   const { data: allUsers, isLoading: isLoadingUsers } = useAllUsers()
   const { data: allRoles, isLoading: isLoadingRoles } = useAllRoles()
-  const { data: tenant, isLoading: isLoadingTenant } = useTenantOne(tenantId || 0) // ✅ Thêm isLoading
+  const { data: tenant, isLoading: isLoadingTenant, refetch: refetchTenant } = useTenantOne(tenantId || 0) 
   const removeRoleMutation = useRemoveRoleFromTenant()
   const addRoleMutation = useAddRoleToTenant()
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null)
@@ -51,6 +53,8 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
             tenantId: null, // Hoặc 0 tùy backend
           },
         })
+        queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] })
+        queryClient.invalidateQueries({ queryKey: ['users'] })
         message.success('Xóa vai trò nhân viên thành công')
         await refetch()
       } catch (error: any) {
@@ -73,6 +77,8 @@ const UserListModalOfTenant: React.FC<UserListModalProps> = ({ tenantId, visible
             tenantId: tenantId, // ✅ Gán tenantId
           },
         })
+        queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] })
+        queryClient.invalidateQueries({ queryKey: ['users'] })
         message.success('Thêm vai trò cho nhân viên thành công')
         await refetch()
         setIsAddModalVisible(false)

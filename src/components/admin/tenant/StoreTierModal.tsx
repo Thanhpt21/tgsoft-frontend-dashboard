@@ -2,32 +2,32 @@ import React, { useState, useEffect } from 'react'
 import { Modal, Input, Form, Button, message, DatePicker } from 'antd'
 import type { Tenant } from '@/types/tenant.type'
 import { useUpdateTenantTierLimits } from '@/hooks/tenant/useUpdateTenantTierLimits'
-import { useAllProducts } from '@/hooks/product/useAllProducts'
 import { useUsersOfTenant } from '@/hooks/user-tenant-role/useUserOfTenant'
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
+import { useAllProductsByTenant } from '@/hooks/product/useAllProducts'
 
 interface StoreTierModalProps {
   visible: boolean
   onClose: () => void
-  onSuccess?: () => void // ✅ Callback khi update thành công
+  onSuccess?: () => void
   tenant: Tenant | null
 }
 
 const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuccess, tenant }) => {
   const [form] = Form.useForm()
-
-  // ✅ Sử dụng hook, truyền tenantId từ tenant
-  const { data: allProducts, isLoading: loadingProducts } = useAllProducts({ search: '' })
+  const queryClient = useQueryClient()
+  const { data: allProducts = [], isLoading: loadingProducts } = useAllProductsByTenant({
+    tenantId: tenant?.id,
+  })
   const { data: users, isLoading: loadingUsers, refetch } = useUsersOfTenant(tenant?.id || 0)
-    const userList = Array.isArray(users) ? users : users?.data || []
+  const userList = Array.isArray(users) ? users : users?.data || []
   const currentAccountCount = userList.length
   
   const { mutateAsync: updateTierLimits, isPending } = useUpdateTenantTierLimits()
 
-  // ✅ Reset form với giá trị từ tenant khi modal mở
   useEffect(() => {
     if (visible && tenant) {
-      console.log('Expiration Date:', tenant.expirationDate);
       form.setFieldsValue({
         maxAccounts: tenant.maxAccounts,
         maxSKUs: tenant.maxSKUs,
@@ -45,12 +45,8 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
       message.error('Không có thông tin cửa hàng!')
       return
     }
-
     try {
       const values = await form.validateFields()
-      
-      
-      // ✅ Convert string sang number
       const limits = {
         maxAccounts: Number(values.maxAccounts),
         maxSKUs: Number(values.maxSKUs),
@@ -61,6 +57,9 @@ const StoreTierModal: React.FC<StoreTierModalProps> = ({ visible, onClose, onSuc
       await updateTierLimits({
         tenantId: tenant.id,
         limits,
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['tenant', tenant.id], 
       })
 
       message.success('Cập nhật giới hạn thành công!')

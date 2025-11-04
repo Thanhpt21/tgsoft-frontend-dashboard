@@ -1,18 +1,20 @@
+// hooks/product/useAllProductsByTenant.ts
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 
-interface UseAllProductsProps {
-  search?: string
+interface UseAllProductsByTenantProps {
+  tenantId?: number
 }
 
-export const useAllProducts = ({ search }: UseAllProductsProps) => {
+export const useAllProductsByTenant = ({ tenantId }: UseAllProductsByTenantProps = {}) => {
   return useQuery({
-    queryKey: ['allProducts', search], 
+    queryKey: ['allProductsByTenant', tenantId],
     queryFn: async () => {
-      const res = await api.get(`/products/all/list`, {
-        params: { search },
+      const res = await api.get('/products/all/tenant', {
+        params: tenantId !== undefined ? { tenantId } : {},
       })
-      return res.data.data
+      return res.data.data || []
     },
+    enabled: tenantId != null,
   })
 }

@@ -3,7 +3,7 @@
 
 import { Modal, Checkbox, Spin, message, Empty, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAllPermissions } from '@/hooks/permission/useAllPermissions'
 import { useRolePermissions } from '@/hooks/role-permission/useRolePermissions'
 import { useAddRolePermission } from '@/hooks/role-permission/useAddRolePermission'
@@ -24,6 +24,7 @@ export function RolePermissionsModal({
   roleName,
 }: RolePermissionsModalProps) {
   const [searchText, setSearchText] = useState('')
+  const [selectAll, setSelectAll] = useState(false)
   const { data: allPermissions, isLoading: loadingAll } = useAllPermissions()
   const { data: rolePermissions, isLoading: loadingRole, refetch } = useRolePermissions(roleId)
   const { mutateAsync: addPermission } = useAddRolePermission()
@@ -41,12 +42,43 @@ export function RolePermissionsModal({
     )
   }) || []
 
+  // Cập nhật trạng thái checkbox "Chọn tất cả"
+  useEffect(() => {
+    if (filteredPermissions.length === 0) {
+      setSelectAll(false)
+    } else {
+      const allSelected = filteredPermissions.every((p: Permission) => selectedIds.includes(p.id))
+      setSelectAll(allSelected)
+    }
+  }, [filteredPermissions, selectedIds])
+
   const handleChange = async (permissionId: number, checked: boolean) => {
     try {
       if (checked) {
         await addPermission({ roleId, permissionId })
       } else {
         await removePermission({ roleId, permissionId })
+      }
+      refetch()
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+    }
+  }
+
+  const handleSelectAll = async (checked: boolean) => {
+    try {
+      if (checked) {
+        // Thêm tất cả permissions chưa có
+        const toAdd = filteredPermissions.filter((p: Permission) => !selectedIds.includes(p.id))
+        for (const p of toAdd) {
+          await addPermission({ roleId, permissionId: p.id })
+        }
+      } else {
+        // Xóa tất cả permissions đang có
+        const toRemove = filteredPermissions.filter((p: Permission) => selectedIds.includes(p.id))
+        for (const p of toRemove) {
+          await removePermission({ roleId, permissionId: p.id })
+        }
       }
       refetch()
     } catch (error: any) {
@@ -71,14 +103,21 @@ export function RolePermissionsModal({
       ) : (
         <div>
           {/* Thanh tìm kiếm */}
-          <div className="mb-4">
+          <div className="mb-4 flex justify-between items-center">
             <Input
               placeholder="Tìm kiếm quyền theo tên hoặc mô tả..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
+              className="flex-1 mr-4"
             />
+            <Checkbox
+              checked={selectAll}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+            >
+              Chọn tất cả
+            </Checkbox>
           </div>
 
           {/* Danh sách permissions */}
