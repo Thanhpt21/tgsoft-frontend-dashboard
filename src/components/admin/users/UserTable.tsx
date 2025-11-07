@@ -22,6 +22,8 @@ export default function UserTable() {
   const { data, isLoading, refetch } = useUsers({ page, limit: 10, search })
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUser()
 
+  console.log("data", data)
+
 
   const columns: ColumnsType<User> = [
     {

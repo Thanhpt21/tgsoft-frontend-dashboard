@@ -1,6 +1,6 @@
 import { Table, Tag, Space, Tooltip, Input, Button, Modal, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { EditOutlined, DeleteOutlined, TeamOutlined, SettingOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, TeamOutlined, SettingOutlined, RobotOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 
 import type { Tenant } from '@/types/tenant.type'
@@ -10,6 +10,7 @@ import { TenantCreateModal } from './TenantCreateModal'
 import { TenantUpdateModal } from './TenantUpdateModal'
 import UserListModalOfTenant from './UserListOfTenantModal'
 import StoreTierModal from './StoreTierModal'
+import AIConfigModal from './AIConfigModal'
 
 export default function TenantTable() {
   const [page, setPage] = useState(1)
@@ -22,6 +23,8 @@ export default function TenantTable() {
   const [tenantIdForUsers, setTenantIdForUsers] = useState<number | null>(null)
   const [openStoreTierModal, setOpenStoreTierModal] = useState(false) 
   const [tenantForTier, setTenantForTier] = useState<Tenant | null>(null) 
+  const [openAIConfigModal, setOpenAIConfigModal] = useState(false) // Thêm state để mở modal AI
+  const [tenantForAIConfig, setTenantForAIConfig] = useState<Tenant | null>(null) // Tenant cho modal AI
 
   const { data, isLoading, refetch } = useTenants({ page, limit: 10, search })
   const { mutateAsync: deleteTenant } = useDeleteTenant()
@@ -82,6 +85,15 @@ export default function TenantTable() {
       width: 120,
       render: (_, record) => (
         <Space size="middle">
+           <Tooltip title="Cấu hình AI">
+            <RobotOutlined
+              style={{ color: '#1890ff', cursor: 'pointer' }} // Thêm màu cho icon
+              onClick={() => {
+                setTenantForAIConfig(record)
+                setOpenAIConfigModal(true) // Mở modal cấu hình AI
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Phân bậc cửa hàng">
             <SettingOutlined
               style={{ color: '#faad14', cursor: 'pointer' }}
@@ -213,6 +225,16 @@ export default function TenantTable() {
         }}
         tenant={tenantForTier}
         onSuccess={() => refetch?.()} // Refetch khi update thành công
+      />
+
+      <AIConfigModal
+        visible={openAIConfigModal}
+        onClose={() => {
+          setOpenAIConfigModal(false)
+          setTenantForAIConfig(null)
+        }}
+        tenant={tenantForAIConfig}
+        onSuccess={() => refetch?.()} // Refetch khi update AI config thành công
       />
     </div>
   );
