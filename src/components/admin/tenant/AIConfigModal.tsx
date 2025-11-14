@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
-import { Modal, Form, Input, Button, message, Switch } from 'antd'
+import { Modal, Form, Input, Button, message, Switch, Select } from 'antd'
 import { Tenant } from '@/types/tenant.type'
-import { useUpdateTenantAIConfig } from '@/hooks/tenant/useUpdateTenantAIConfig'  // Hook để update cấu hình AI
+import { useUpdateTenantAIConfig } from '@/hooks/tenant/useUpdateTenantAIConfig'
+import { useAllPromptAIs } from '@/hooks/promptAI/useAllPromptAIs'
 
 interface AIConfigModalProps {
   visible: boolean
@@ -13,22 +14,33 @@ interface AIConfigModalProps {
 const AIConfigModal: React.FC<AIConfigModalProps> = ({ visible, onClose, onSuccess, tenant }) => {
   const [form] = Form.useForm()
   const { mutateAsync: updateAIConfig } = useUpdateTenantAIConfig()
+  const { data: promptAIs, isLoading: loadingPrompts } = useAllPromptAIs()
 
   // Khi modal mở và có tenant, set các giá trị trong form
-  useEffect(() => {
+    useEffect(() => {
     if (visible && tenant) {
-      form.setFieldsValue({
+      const formValues = {
         aiChatEnabled: tenant.aiChatEnabled,
         aiProvider: tenant.aiProvider,
         aiModel: tenant.aiModel,
-        aiSystemPrompt: tenant.aiSystemPrompt,
+        aiSystemPromptId: tenant.aiSystemPromptId,
         aiTemperature: tenant.aiTemperature,
         aiMaxTokens: tenant.aiMaxTokens,
         aiAutoReplyDelay: tenant.aiAutoReplyDelay,
         apiKey: tenant.apiKey,
-      })
+      }
+      
+      console.log('Setting form values:', formValues)
+      form.setFieldsValue(formValues)
     }
-  }, [visible, tenant, form])
+  }, [visible, tenant, form, promptAIs])
+
+  // Reset form khi đóng modal
+  useEffect(() => {
+    if (!visible) {
+      form.resetFields()
+    }
+  }, [visible, form])
 
   // Hàm gửi dữ liệu và cập nhật cấu hình AI
   const handleSubmit = async () => {
@@ -43,13 +55,13 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ visible, onClose, onSucce
         aiChatEnabled: values.aiChatEnabled,
         aiProvider: values.aiProvider,
         aiModel: values.aiModel,
-        aiSystemPrompt: values.aiSystemPrompt,
+        aiSystemPromptId: values.aiSystemPromptId,
         aiTemperature: values.aiTemperature,
         aiMaxTokens: values.aiMaxTokens,
         aiAutoReplyDelay: values.aiAutoReplyDelay,
         apiKey: values.apiKey,
       }
-
+      
       // Call API để update cấu hình AI
       await updateAIConfig({ tenantId: tenant.id, aiConfig })
 
@@ -70,13 +82,13 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ visible, onClose, onSucce
   return (
     <Modal
       title={`Cấu hình AI cho cửa hàng: ${tenant?.name || ''}`}
-      visible={visible}
+      open={visible}
       onCancel={handleCancel}
       footer={[
-        <Button key="cancel" onClick={handleCancel} >
+        <Button key="cancel" onClick={handleCancel}>
           Hủy
         </Button>,
-        <Button key="save" type="primary"  onClick={handleSubmit}>
+        <Button key="save" type="primary" onClick={handleSubmit}>
           Lưu
         </Button>,
       ]}
@@ -110,12 +122,36 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ visible, onClose, onSucce
           <Input placeholder="Ví dụ: gpt-4o-mini" />
         </Form.Item>
 
-        {/* System Prompt */}
+        {/* System Prompt Selection */}
         <Form.Item
-          name="aiSystemPrompt"
+          name="aiSystemPromptId"
           label="System Prompt"
         >
-          <Input.TextArea placeholder="Câu lệnh hệ thống tùy chỉnh" rows={4} />
+          <Select
+            placeholder="Chọn system prompt"
+            loading={loadingPrompts}
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            filterOption={(input, option) => {
+              const label = option?.label as string | undefined;
+              return (label ?? '').toLowerCase().includes(input.toLowerCase());
+            }}
+          >
+            {promptAIs?.map((prompt: any) => (
+              <Select.Option key={prompt.id} value={prompt.id} label={prompt.name}>
+                <div>
+                  <div style={{ fontWeight: 'bold' }}>{prompt.name}</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>
+                    {prompt.text.length > 100 
+                      ? `${prompt.text.substring(0, 100)}...` 
+                      : prompt.text
+                    }
+                  </div>
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         {/* Temperature (Creativity level) */}
@@ -127,7 +163,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ visible, onClose, onSucce
             { type: 'number', min: 0, max: 2, message: 'Mức độ sáng tạo phải nằm trong khoảng từ 0 đến 2' },
           ]}
         >
-          <Input type="number" placeholder="Mức độ sáng tạo" />
+          <Input type="number" placeholder="Mức độ sáng tạo" step="0.1" />
         </Form.Item>
 
         {/* Max Tokens */}

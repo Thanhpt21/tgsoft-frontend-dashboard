@@ -1,3 +1,5 @@
+import { PromptAI } from "./promptAI.type"
+
 export interface Tenant {
   id: number
   name: string
@@ -17,7 +19,7 @@ export interface Tenant {
   aiChatEnabled: boolean          // Bật/tắt AI chat
   aiProvider: string | null       // Provider: openai, gemini, claude
   aiModel: string | null          // Model name
-  aiSystemPrompt: string | null   // Custom system prompt
+  aiSystemPromptId: PromptAI | null   
   aiTemperature: number | null    // 0-2: Creativity level
   aiMaxTokens: number | null      // Max tokens per response
   aiAutoReplyDelay: number | null // Delay in milliseconds
