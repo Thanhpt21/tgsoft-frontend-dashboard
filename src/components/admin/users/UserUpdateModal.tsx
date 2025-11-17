@@ -10,6 +10,7 @@ import {
   Button,
   Row,
   Col,
+  Checkbox,
 } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
@@ -40,6 +41,7 @@ export const UserUpdateModal = ({
         gender: user.gender,
         role: user.role,
         tokenAI: user.tokenAI,
+        isAdminShop: user.role === 'adminshop',
       })
 
       setFileList(
@@ -60,15 +62,20 @@ export const UserUpdateModal = ({
   const onFinish = async (values: any) => {
     try {
       const file = fileList?.[0]?.originFileObj
-        const tokenAI = Number(values.tokenAI)
+      const tokenAI = Number(values.tokenAI)
       if (isNaN(tokenAI)) {
         message.error('Số lượng Token AI phải là một số hợp lệ')
         return
       }
 
+      // Set role to adminshop if checkbox is checked, otherwise set to user
+      const role = values.isAdminShop ? 'adminshop' : 'user'
+
+      const { isAdminShop, ...restValues } = values
+
       await mutateAsync({
         id: user.id,
-        data: { ...values, tokenAI  },
+        data: { ...restValues, tokenAI, role },
         file,
       })
 
@@ -157,6 +164,19 @@ export const UserUpdateModal = ({
             </Form.Item>
           </Col>
         </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item 
+              label="Quyền Admin Shop" 
+              name="isAdminShop" 
+              valuePropName="checked"
+            >
+              <Checkbox>Cấp quyền Admin Shop</Checkbox>
+            </Form.Item>
+          </Col>
+        </Row>
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item

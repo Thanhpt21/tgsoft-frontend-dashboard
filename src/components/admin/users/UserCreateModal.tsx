@@ -7,6 +7,7 @@ import {
   Select,
   Upload,
   Switch,
+  Checkbox,
   message,
   Button,
   Row,
@@ -37,10 +38,14 @@ export const UserCreateModal = ({
       // Lấy file gốc để upload lên server
       const file = fileList?.[0]?.originFileObj
       const tokenAI = Number(values.tokenAI)
-    
+
+      // Set role to adminshop if checkbox is checked, otherwise set to user
+      const role = values.isAdminShop ? 'adminshop' : 'user'
+
+      const { isAdminShop, ...restValues } = values
 
       // Gửi data + file lên server
-      await mutateAsync({ ...values, file, tokenAI })
+      await mutateAsync({ ...restValues, file, tokenAI, role })
       
       message.success('Tạo người dùng thành công')
       onClose()
@@ -180,6 +185,20 @@ export const UserCreateModal = ({
             </Form.Item>
           </Col>
         </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item 
+              label="Quyền Admin Shop" 
+              name="isAdminShop" 
+              valuePropName="checked"
+              initialValue={false}
+            >
+              <Checkbox>Cấp quyền Admin Shop</Checkbox>
+            </Form.Item>
+          </Col>
+        </Row>
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
