@@ -1,13 +1,14 @@
 'use client'
 
-import { Table, Tag, Image, Space, Tooltip, Input, Button, Modal, message } from 'antd'
+import { Table, Tag, Space, Tooltip, Input, Button, Modal, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, HistoryOutlined } from '@ant-design/icons'
 import { useUsers } from '@/hooks/user/useUsers'
 import { useDeleteUser } from '@/hooks/user/useDeleteUser'
 import { useState } from 'react'
 import { UserCreateModal } from './UserCreateModal'
 import { UserUpdateModal } from './UserUpdateModal'
+import { TokenHistoryModal } from './TokenHistoryModal'
 
 import type { User } from '@/types/user.type'
 
@@ -17,13 +18,11 @@ export default function UserTable() {
   const [inputValue, setInputValue] = useState('')
   const [openCreate, setOpenCreate] = useState(false)
   const [openUpdate, setOpenUpdate] = useState(false)
+  const [openHistory, setOpenHistory] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   const { data, isLoading, refetch } = useUsers({ page, limit: 10, search })
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUser()
-
-  console.log("data", data)
-
 
   const columns: ColumnsType<User> = [
     {
@@ -32,7 +31,6 @@ export default function UserTable() {
       width: 60,
       render: (_text, _record, index) => (page - 1) * 10 + index + 1,
     },
-
     {
       title: 'Tên',
       dataIndex: 'name',
@@ -43,8 +41,6 @@ export default function UserTable() {
       dataIndex: 'email',
       key: 'email',
     },
- 
-  
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',
@@ -61,7 +57,27 @@ export default function UserTable() {
       key: 'tokenAI',
       render: (tokenAI: number) => <span>{tokenAI}</span>,
     },
-      {
+    {
+      title: 'Token Reset mỗi tháng',
+      dataIndex: 'defaultTokens',
+      key: 'defaultTokens',
+      render: (defaultTokens: number) => (
+        <Tooltip title="Token renew hàng tháng">
+          <Tag color="blue">{defaultTokens}</Tag>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Token dự phòng',
+      dataIndex: 'fixedTokens',
+      key: 'fixedTokens',
+      render: (fixedTokens: number) => (
+        <Tooltip title="Token không bị reset">
+          <Tag color="green">{fixedTokens}</Tag>
+        </Tooltip>
+      ),
+    },
+    {
       title: 'ID Cửa Hàng',
       dataIndex: 'tenantId', 
       key: 'tenantId',
@@ -70,9 +86,18 @@ export default function UserTable() {
     {
       title: 'Hành động',
       key: 'action',
-      width: 120,
+      width: 180,
       render: (_, record) => (
         <Space size="middle">
+          <Tooltip title="Lịch sử Token">
+            <HistoryOutlined
+              style={{ color: '#722ed1', cursor: 'pointer' }}
+              onClick={() => {
+                setSelectedUser(record)
+                setOpenHistory(true)
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Chỉnh sửa">
             <EditOutlined
               style={{ color: '#1890ff', cursor: 'pointer' }}
@@ -143,7 +168,7 @@ export default function UserTable() {
         rowKey="id"
         loading={isLoading}
         pagination={{
-          total: (data?.data || []).filter((user: User) => user.role !== 'admin').length, // ← Cập nhật total
+          total: (data?.data || []).filter((user: User) => user.role !== 'admin').length,
           current: page,
           pageSize: 10,
           onChange: (p) => setPage(p),
@@ -161,6 +186,12 @@ export default function UserTable() {
         onClose={() => setOpenUpdate(false)}
         user={selectedUser}
         refetch={refetch}
+      />
+
+      <TokenHistoryModal
+        open={openHistory}
+        onClose={() => setOpenHistory(false)}
+        user={selectedUser}
       />
     </div>
   )

@@ -16,7 +16,7 @@ export const useUsers = ({
   return useQuery({
     queryKey: ['users', page, limit, search],
     queryFn: async () => {
-      const res = await api.get('/users', {
+      const res = await api.get('/users/admin-shop/list', {
         params: { page, limit, search },
       })
       return res.data.data // Trả về { items, total, page, pageCount }

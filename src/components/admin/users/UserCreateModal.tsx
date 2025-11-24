@@ -38,6 +38,8 @@ export const UserCreateModal = ({
       // Lấy file gốc để upload lên server
       const file = fileList?.[0]?.originFileObj
       const tokenAI = Number(values.tokenAI)
+      const defaultTokens = Number(values.defaultTokens || 0)
+      const fixedTokens = Number(values.fixedTokens || 0)
 
       // Set role to adminshop if checkbox is checked, otherwise set to user
       const role = values.isAdminShop ? 'adminshop' : 'user'
@@ -45,7 +47,14 @@ export const UserCreateModal = ({
       const { isAdminShop, ...restValues } = values
 
       // Gửi data + file lên server
-      await mutateAsync({ ...restValues, file, tokenAI, role })
+      await mutateAsync({ 
+        ...restValues, 
+        file, 
+        tokenAI, 
+        defaultTokens,
+        fixedTokens,
+        role 
+      })
       
       message.success('Tạo người dùng thành công')
       onClose()
@@ -225,6 +234,70 @@ export const UserCreateModal = ({
               <Input 
                 type="number" 
                 placeholder="Nhập số lượng Token AI" 
+                min={0}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Thêm 2 field mới cho token */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Token Mặc Định"
+              name="defaultTokens"
+              tooltip="Token renew hàng tháng"
+              rules={[
+                { 
+                  type: 'number', 
+                  transform: (value) => Number(value || 0),
+                  message: 'Token mặc định phải là số' 
+                },
+                {
+                  validator: (_, value) => {
+                    const num = Number(value || 0)
+                    if (isNaN(num) || num < 0) {
+                      return Promise.reject('Token mặc định phải là số không âm')
+                    }
+                    return Promise.resolve()
+                  }
+                }
+              ]}
+              initialValue={0}
+            >
+              <Input 
+                type="number" 
+                placeholder="Token mặc định" 
+                min={0}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Token Cố Định"
+              name="fixedTokens"
+              tooltip="Token không bị reset"
+              rules={[
+                { 
+                  type: 'number', 
+                  transform: (value) => Number(value || 0),
+                  message: 'Token cố định phải là số' 
+                },
+                {
+                  validator: (_, value) => {
+                    const num = Number(value || 0)
+                    if (isNaN(num) || num < 0) {
+                      return Promise.reject('Token cố định phải là số không âm')
+                    }
+                    return Promise.resolve()
+                  }
+                }
+              ]}
+              initialValue={0}
+            >
+              <Input 
+                type="number" 
+                placeholder="Token cố định" 
                 min={0}
               />
             </Form.Item>

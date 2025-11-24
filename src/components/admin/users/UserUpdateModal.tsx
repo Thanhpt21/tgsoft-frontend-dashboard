@@ -41,6 +41,8 @@ export const UserUpdateModal = ({
         gender: user.gender,
         role: user.role,
         tokenAI: user.tokenAI,
+        defaultTokens: user.defaultTokens || 0,
+        fixedTokens: user.fixedTokens || 0,
         isAdminShop: user.role === 'adminshop',
       })
 
@@ -63,8 +65,11 @@ export const UserUpdateModal = ({
     try {
       const file = fileList?.[0]?.originFileObj
       const tokenAI = Number(values.tokenAI)
-      if (isNaN(tokenAI)) {
-        message.error('Số lượng Token AI phải là một số hợp lệ')
+      const defaultTokens = Number(values.defaultTokens)
+      const fixedTokens = Number(values.fixedTokens)
+      
+      if (isNaN(tokenAI) || isNaN(defaultTokens) || isNaN(fixedTokens)) {
+        message.error('Số lượng Token phải là một số hợp lệ')
         return
       }
 
@@ -75,7 +80,13 @@ export const UserUpdateModal = ({
 
       await mutateAsync({
         id: user.id,
-        data: { ...restValues, tokenAI, role },
+        data: { 
+          ...restValues, 
+          tokenAI, 
+          defaultTokens,
+          fixedTokens,
+          role 
+        },
         file,
       })
 
@@ -193,6 +204,48 @@ export const UserUpdateModal = ({
               <Input 
                 type="number" 
                 placeholder="Nhập số lượng Token AI" 
+                min={0}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Thêm 2 field mới cho token */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Token Mặc Định"
+              name="defaultTokens"
+              tooltip="Token renew hàng tháng"
+              rules={[
+                { 
+                  pattern: /^[0-9]+$/, 
+                  message: 'Token mặc định phải là số nguyên dương' 
+                }
+              ]}
+            >
+              <Input 
+                type="number" 
+                placeholder="Token mặc định" 
+                min={0}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Token Cố Định"
+              name="fixedTokens"
+              tooltip="Token không bị reset"
+              rules={[
+                { 
+                  pattern: /^[0-9]+$/, 
+                  message: 'Token cố định phải là số nguyên dương' 
+                }
+              ]}
+            >
+              <Input 
+                type="number" 
+                placeholder="Token cố định" 
                 min={0}
               />
             </Form.Item>
