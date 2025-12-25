@@ -35,18 +35,16 @@ export const UserCreateModal = ({
 
   const onFinish = async (values: any) => {
     try {
-      // Lấy file gốc để upload lên server
       const file = fileList?.[0]?.originFileObj
       const tokenAI = Number(values.tokenAI)
       const defaultTokens = Number(values.defaultTokens || 0)
       const fixedTokens = Number(values.fixedTokens || 0)
 
-      // Set role to adminshop if checkbox is checked, otherwise set to user
+      // Nếu checkbox được check → adminshop, ngược lại → user
       const role = values.isAdminShop ? 'adminshop' : 'user'
 
       const { isAdminShop, ...restValues } = values
 
-      // Gửi data + file lên server
       await mutateAsync({ 
         ...restValues, 
         file, 
@@ -92,7 +90,7 @@ export const UserCreateModal = ({
   return (
     <Modal
       title="Tạo người dùng mới"
-      visible={open}
+      open={open}  // Antd v5 dùng open thay vì visible
       onCancel={onClose}
       footer={null}
       destroyOnClose
@@ -112,7 +110,6 @@ export const UserCreateModal = ({
           </Upload>
         </Form.Item>
 
-        {/* Layout 2 cột */}
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -195,13 +192,14 @@ export const UserCreateModal = ({
           </Col>
         </Row>
 
+        {/* Quyền Admin Shop - MẶC ĐỊNH TÍCH SẴN */}
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item 
               label="Quyền Admin Shop" 
               name="isAdminShop" 
               valuePropName="checked"
-              initialValue={false}
+              initialValue={true}  // ← Đổi từ false thành true
             >
               <Checkbox>Cấp quyền Admin Shop</Checkbox>
             </Form.Item>
@@ -240,7 +238,6 @@ export const UserCreateModal = ({
           </Col>
         </Row>
 
-        {/* Thêm 2 field mới cho token */}
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
